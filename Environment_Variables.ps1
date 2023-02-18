@@ -13,6 +13,7 @@ $epmautomatePath = "C:\Oracle\EPM Automate\bin\epmautomate.bat"
 
 $enableSQLLogging = "False"
 
+
 ########################
 ##   Time Variables   ##
 ########################
