@@ -6,7 +6,7 @@ const { parse } = require("csv-parse");
 const { stringify } = require("csv-stringify");
 const csv = require("csv");
 
-const { basePath, processesDirectory } = require("../constants");
+const { processesDirectory } = require("../constants");
 
 exports.getProcessSteps = catchAsync(async (req, res) => {
   const title = req.params.processTitle;
@@ -31,7 +31,11 @@ exports.getProcessSteps = catchAsync(async (req, res) => {
       })
     )
     .on("data", (row) => {
-      console.log(row);
+      // remove " from the start and end of the string
+      row = row.map((item) => {
+        return item.replace(/^"(.*)"$/, "$1");
+      });
+
       let stepData = {
         commandStep: row[0],
         commandType: row[2],
@@ -93,35 +97,48 @@ exports.deleteStepFromProcess = catchAsync(async (req, res) => {
   const data = fs.readFileSync(filePath, "utf-8");
 
   // parse the data into a 2D array of rows and columns
-  csv.parse(data, { delimiter: "|" }, (err, rows) => {
-    if (err) throw err;
+  csv.parse(
+    data,
+    {
+      delimiter: "|",
+      quote: false // <== set quote to false to avoid errors
+    },
+    (err, rows) => {
+      if (err) throw err;
 
-    // find the index of the row to delete
-    const indexToDelete = rows.findIndex((row) => row[0] === commandStep);
+      // remove " from the start and end of the string
+      rows = rows.map((row) => {
+        return row.map((item) => {
+          return item.replace(/^"(.*)"$/, "$1");
+        });
+      });
 
-    // remove the row to delete and update the index for remaining rows
-    for (let i = indexToDelete; i < rows.length - 1; i++) {
-      rows[i] = rows[i + 1];
-      rows[i][0] = (i + 1).toString().padStart(3, "0");
+      // find the index of the row to delete
+      const indexToDelete = rows.findIndex((row) => row[0] === commandStep);
+
+      // remove the row to delete and update the index for remaining rows
+      for (let i = indexToDelete; i < rows.length - 1; i++) {
+        rows[i] = rows[i + 1];
+        rows[i][0] = (i + 1).toString().padStart(3, "0");
+      }
+      rows.pop();
+
+      // create a new file stream to write the updated data to
+      const fileStream = fs.createWriteStream(filePath, { encoding: "utf-8" });
+
+      // create the CSV stringifier object with the '|' delimiter
+      const stringifier = csv.stringify({ delimiter: "|", quote: false });
+
+      // pipe the stringifier output to the file stream
+      stringifier.pipe(fileStream);
+
+      // write the rows to the CSV file
+      rows.forEach((row) => stringifier.write(row));
+
+      // end the stream
+      stringifier.end();
     }
-    rows.pop();
-
-    console.log({ rows });
-
-    const fileStream = fs.createWriteStream(filePath, { encoding: "utf-8" });
-
-    // create the CSV stringifier object with the '|' delimiter
-    const stringifier = csv.stringify({ delimiter: "|" });
-
-    // pipe the stringifier output to the file stream
-    stringifier.pipe(fileStream);
-
-    // write the rows to the CSV file
-    rows.forEach((row) => stringifier.write(row));
-
-    // end the stream
-    stringifier.end();
-  });
+  );
 
   res.status(200).json({
     status: "success"
