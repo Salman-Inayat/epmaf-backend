@@ -4,12 +4,14 @@ const fs = require("fs");
 const path = require("path");
 const { exec } = require("child_process");
 
-exports.getSettingsFile = catchAsync(async (req, res, next) => {
-  const settingsFilePath = path.join(
-    process.argv[0] + "./Environment_Variables.ps1"
-  );
+const { basePath, environmentSettingsFile } = require("../constants");
 
-  const settingsFile = fs.readFileSync("./Environment_Variables.ps1", "utf8");
+exports.getSettingsFile = catchAsync(async (req, res, next) => {
+  // const settingsFilePath = path.join(
+  //   process.argv[0] + "./Environment_Variables.ps1"
+  // );
+
+  const settingsFile = fs.readFileSync(environmentSettingsFile, "utf8");
 
   const variables = {};
   let currentSection = "";
@@ -41,20 +43,18 @@ exports.getSettingsFile = catchAsync(async (req, res, next) => {
 exports.updateSettings = catchAsync(async (req, res, next) => {
   const { data } = req.body;
 
-  const settingsFile = fs.readFileSync("./Environment_Variables.ps1", "utf8");
+  const settingsFile = fs.readFileSync(environmentSettingsFile, "utf8");
 
   const lines = settingsFile.split("\n");
 
   Object.keys(data).forEach((key) => {
     const lineIndex = lines.findIndex((line) => line.startsWith(`$${key}`));
     lines[lineIndex] = `$${key} = "${data[key]}"`;
-
-    console.log("Line updated: ", lines[lineIndex]);
   });
 
   const newSettingsFile = lines.join("\n");
 
-  fs.writeFileSync("./Environment_Variables.ps1", newSettingsFile);
+  fs.writeFileSync(environmentSettingsFile, newSettingsFile);
 
   res.status(200).json({
     status: "success"
@@ -64,7 +64,7 @@ exports.updateSettings = catchAsync(async (req, res, next) => {
 exports.addProperty = catchAsync(async (req, res, next) => {
   const { key, value, precedent } = req.body;
 
-  const settingsFile = fs.readFileSync("./Environment_Variables.ps1", "utf8");
+  const settingsFile = fs.readFileSync(environmentSettingsFile, "utf8");
 
   const lines = settingsFile.split("\n");
 
@@ -74,7 +74,7 @@ exports.addProperty = catchAsync(async (req, res, next) => {
 
   const newSettingsFile = lines.join("\n");
 
-  fs.writeFileSync("./Environment_Variables.ps1", newSettingsFile);
+  fs.writeFileSync(environmentSettingsFile, newSettingsFile);
 
   res.status(200).json({
     status: "success"
