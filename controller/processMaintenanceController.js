@@ -19,13 +19,32 @@ exports.getProcesses = catchAsync(async (req, res) => {
 });
 
 exports.addProcess = catchAsync(async (req, res) => {
-  const { title } = req.params.processFileName;
+  const { title } = req.body;
 
   console.log({ title });
 
   // create a csv file in the processes directory
   const filePath = `${processesDirectory}/${title}.csv`;
   fs.writeFileSync(filePath, "");
+
+  res.status(200).json({
+    status: "success"
+  });
+});
+
+exports.editProcess = catchAsync(async (req, res) => {
+  const { oldTitle, newTitle } = req.body;
+
+  console.log({ oldTitle, newTitle });
+
+  // rename a csv file in the processes directory
+  const oldFilePath = `${processesDirectory}/${oldTitle}.csv`;
+  const newFilePath = `${processesDirectory}/${newTitle}.csv`;
+
+  // check if file exists
+  if (fs.existsSync(oldFilePath)) {
+    fs.renameSync(oldFilePath, newFilePath);
+  }
 
   res.status(200).json({
     status: "success"
