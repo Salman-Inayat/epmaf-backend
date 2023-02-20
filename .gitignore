@@ -60,3 +60,5 @@ config.env
 yarn.lock
 
 .vscode
+
+/uploads
