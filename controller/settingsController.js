@@ -4,13 +4,9 @@ const fs = require("fs");
 const path = require("path");
 const { exec } = require("child_process");
 
-const { basePath, environmentSettingsFile } = require("../constants");
+const { environmentSettingsFile } = require("../constants");
 
 exports.getSettingsFile = catchAsync(async (req, res, next) => {
-  // const settingsFilePath = path.join(
-  //   process.argv[0] + "./Environment_Variables.ps1"
-  // );
-
   const settingsFile = fs.readFileSync(environmentSettingsFile, "utf8");
 
   const variables = {};

@@ -6,7 +6,10 @@ const { parse } = require("csv-parse");
 const { stringify } = require("csv-stringify");
 const csv = require("csv");
 
-const { processesDirectory } = require("../constants");
+const {
+  processesDirectory,
+  getDelimiterFromSettingsFile
+} = require("../constants");
 
 exports.getProcessSteps = catchAsync(async (req, res) => {
   const title = req.params.processTitle;
@@ -26,7 +29,7 @@ exports.getProcessSteps = catchAsync(async (req, res) => {
   fs.createReadStream(filePath)
     .pipe(
       parse({
-        delimiter: "|",
+        delimiter: getDelimiterFromSettingsFile(),
         quote: false // <== set quote to false to avoid errors
       })
     )
@@ -73,6 +76,7 @@ exports.addStepToProcess = catchAsync(async (req, res) => {
 
   // wrap the output in quotes
   const output = `"${values.join('"|"')}"`;
+  // const output = `"${values.join(`"${getDelimiterFromSettingsFile()}"`)}"`;
   // const output = values.join("|");
 
   fs.appendFileSync(filePath, output + "\n");
@@ -100,7 +104,7 @@ exports.deleteStepFromProcess = catchAsync(async (req, res) => {
   csv.parse(
     data,
     {
-      delimiter: "|",
+      delimiter: getDelimiterFromSettingsFile(),
       quote: false // <== set quote to false to avoid errors
     },
     (err, rows) => {
@@ -127,7 +131,10 @@ exports.deleteStepFromProcess = catchAsync(async (req, res) => {
       const fileStream = fs.createWriteStream(filePath, { encoding: "utf-8" });
 
       // create the CSV stringifier object with the '|' delimiter
-      const stringifier = csv.stringify({ delimiter: "|", quote: false });
+      const stringifier = csv.stringify({
+        delimiter: getDelimiterFromSettingsFile(),
+        quote: false
+      });
 
       // pipe the stringifier output to the file stream
       stringifier.pipe(fileStream);
