@@ -133,8 +133,6 @@ exports.getEncryptedPasswords = catchAsync(async (req, res, next) => {
 });
 
 exports.encryptPassword = catchAsync(async (req, res, next) => {
-  // const password = "password";
-
   const { password, passwordType } = req.body;
 
   const powershellInstance = async () => {
