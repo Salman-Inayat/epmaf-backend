@@ -2,9 +2,13 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const fs = require("fs");
 const path = require("path");
-const { exec } = require("child_process");
+const { spawn } = require("child_process");
 
-const { environmentSettingsFile } = require("../constants");
+const {
+  environmentSettingsFile,
+  encryptedPasswordsDirectory,
+  credentialsDirectory
+} = require("../constants");
 
 exports.getSettingsFile = catchAsync(async (req, res, next) => {
   const settingsFile = fs.readFileSync(environmentSettingsFile, "utf8");
@@ -98,5 +102,66 @@ exports.updateApplicationIcon = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     iconPath: `http://localhost:5001/${req.file.path}`
+  });
+});
+
+exports.getEncryptedPasswords = catchAsync(async (req, res, next) => {
+  const files = fs.readdirSync(encryptedPasswordsDirectory);
+
+  if (!files.length) {
+    return res.status(200).json({
+      passwords: []
+    });
+  }
+
+  const passwords = files
+    .filter((file) => file.endsWith(".txt"))
+    .map((file) => {
+      const content = fs
+        .readFileSync(path.join(encryptedPasswordsDirectory, file), "utf16le")
+        .replace(/\r?\n|\r/g, "");
+
+      return {
+        [file.split(".")[0]]: content
+      };
+    });
+
+  res.status(200).json({
+    passwords
+  });
+});
+
+exports.encryptPassword = catchAsync(async (req, res, next) => {
+  // const password = "password";
+
+  const { password, passwordType } = req.body;
+
+  const powershellInstance = async () => {
+    const ps = new PowerShell({
+      debug: true,
+      executableOptions: {
+        "-ExecutionPolicy": "bypass",
+        "-NoProfile": true
+      }
+    });
+
+    try {
+      const scriptCommand = PowerShell.command`. ${path.join(
+        credentialsDirectory,
+        "EncryptSQLServerPassword.ps1"
+      )} ${password}`;
+      const result = await ps.invoke(scriptCommand);
+      console.log(result);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      await ps.dispose();
+    }
+  };
+
+  await powershellInstance();
+
+  res.status(200).json({
+    message: "success"
   });
 });

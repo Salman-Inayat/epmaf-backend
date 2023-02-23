@@ -31,9 +31,21 @@ const processesDirectory = path.join(
   "/Process/Converted_Process_Files"
 );
 
+const uploadsDirectory = path.join(basePath, "/uploads");
+
+const credentialsDirectory = path.join(basePath, "/Credential");
+
+const encryptedPasswordsDirectory = path.join(
+  credentialsDirectory,
+  "/Encrypted_Passwords"
+);
+
 module.exports = {
   basePath,
   environmentSettingsFile,
   processesDirectory,
-  getDelimiterFromSettingsFile
+  getDelimiterFromSettingsFile,
+  uploadsDirectory,
+  credentialsDirectory,
+  encryptedPasswordsDirectory
 };

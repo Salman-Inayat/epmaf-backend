@@ -28,4 +28,8 @@ router.post(
   settingsController.updateApplicationIcon
 );
 
+router.get("/encrypted-passwords", settingsController.getEncryptedPasswords);
+
+router.post("/encrypt-password", settingsController.encryptPassword);
+
 module.exports = router;
