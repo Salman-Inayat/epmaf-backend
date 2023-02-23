@@ -28,16 +28,17 @@ const getDelimiterFromSettingsFile = () => {
 
 const processesDirectory = path.join(
   basePath,
-  "/Process/Converted_Process_Files"
+  "Process",
+  "Converted_Process_Files"
 );
 
 const uploadsDirectory = path.join(basePath, "/uploads");
 
-const credentialsDirectory = path.join(basePath, "/Credential");
+const credentialsDirectory = path.join(basePath, "Credential");
 
 const encryptedPasswordsDirectory = path.join(
   credentialsDirectory,
-  "/Encrypted_Passwords"
+  "Encrypted_Passwords"
 );
 
 module.exports = {

@@ -2,7 +2,8 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const fs = require("fs");
 const path = require("path");
-const { spawn } = require("child_process");
+
+const { PowerShell } = require("node-powershell");
 
 const {
   environmentSettingsFile,
