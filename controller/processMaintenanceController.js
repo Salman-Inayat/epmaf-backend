@@ -2,8 +2,14 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const fs = require("fs");
 const { exec } = require("child_process");
-const { basePath, processesDirectory } = require("../constants");
+const { processesDirectory } = require("../constants");
 
+/**
+ * Get all processes
+ * @returns {array} - processes
+ * @returns {object} - status
+ *
+ */
 exports.getProcesses = catchAsync(async (req, res) => {
   const processes = fs.readdirSync(processesDirectory);
 
@@ -18,6 +24,11 @@ exports.getProcesses = catchAsync(async (req, res) => {
   });
 });
 
+/**
+ * Add a process
+ * @param {string} title - the title of the process
+ * @returns {object} - status
+ */
 exports.addProcess = catchAsync(async (req, res) => {
   const { title } = req.body;
 
@@ -32,6 +43,12 @@ exports.addProcess = catchAsync(async (req, res) => {
   });
 });
 
+/**
+ * Edit a process
+ * @param {string} oldTitle - the old title of the process
+ * @param {string} newTitle - the new title of the process
+ * @returns {object} - status
+ */
 exports.editProcess = catchAsync(async (req, res) => {
   const { oldTitle, newTitle } = req.body;
 
@@ -51,18 +68,24 @@ exports.editProcess = catchAsync(async (req, res) => {
   });
 });
 
+/**
+ * Delete a process
+ * @param {string} title - the title of the process
+ * @returns {object} - status
+ */
 exports.deleteProcess = catchAsync(async (req, res) => {
   const { title } = req.query;
 
-  console.log({ title });
+  const filePrefix = title.split("_")[0];
 
-  // delete a csv file in the processes directory
   const filePath = `${processesDirectory}/${title}.csv`;
 
-  // check if file exists
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
-  }
+  // delete the content of the file
+  fs.writeFileSync(filePath, "");
+
+  // rename the file to P001_NotUsed.csv
+  const newFilePath = `${processesDirectory}/${filePrefix}_NotUsed.csv`;
+  fs.renameSync(filePath, newFilePath);
 
   res.status(200).json({
     status: "success"

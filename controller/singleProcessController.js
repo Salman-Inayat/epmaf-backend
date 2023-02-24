@@ -76,8 +76,6 @@ exports.addStepToProcess = catchAsync(async (req, res) => {
 
   // wrap the output in quotes
   const output = `"${values.join('"|"')}"`;
-  // const output = `"${values.join(`"${getDelimiterFromSettingsFile()}"`)}"`;
-  // const output = values.join("|");
 
   fs.appendFileSync(filePath, output + "\n");
 
@@ -100,52 +98,52 @@ exports.deleteStepFromProcess = catchAsync(async (req, res) => {
   // read the file into memory
   const data = fs.readFileSync(filePath, "utf-8");
 
-  // parse the data into a 2D array of rows and columns
-  csv.parse(
-    data,
-    {
-      delimiter: getDelimiterFromSettingsFile(),
-      quote: false // <== set quote to false to avoid errors
-    },
-    (err, rows) => {
-      if (err) throw err;
+  // pick the row of the file where the commandStep matches the commandStep in the request
+  const rows = data.split("\n");
 
-      // remove " from the start and end of the string
-      rows = rows.map((row) => {
-        return row.map((item) => {
-          return item.replace(/^"(.*)"$/, "$1");
-        });
-      });
+  const rowToDelete = rows.find((row) => row.includes(commandStep));
 
-      // find the index of the row to delete
-      const indexToDelete = rows.findIndex((row) => row[0] === commandStep);
+  // remove the row from the file
+  const updatedFile = data.replace(rowToDelete + "\n", "");
 
-      // remove the row to delete and update the index for remaining rows
-      for (let i = indexToDelete; i < rows.length - 1; i++) {
-        rows[i] = rows[i + 1];
-        rows[i][0] = (i + 1).toString().padStart(3, "0");
-      }
-      rows.pop();
+  // write the updated file to the file system
+  fs.writeFileSync(filePath, updatedFile);
 
-      // create a new file stream to write the updated data to
-      const fileStream = fs.createWriteStream(filePath, { encoding: "utf-8" });
+  res.status(200).json({
+    status: "success"
+  });
+});
 
-      // create the CSV stringifier object with the '|' delimiter
-      const stringifier = csv.stringify({
-        delimiter: getDelimiterFromSettingsFile(),
-        quote: false
-      });
+exports.updateStepInProcess = catchAsync(async (req, res) => {
+  const title = req.params.processTitle;
 
-      // pipe the stringifier output to the file stream
-      stringifier.pipe(fileStream);
+  const { data } = req.body;
 
-      // write the rows to the CSV file
-      rows.forEach((row) => stringifier.write(row));
+  // read the csv file
+  const filePath = `${processesDirectory}/${title}.csv`;
 
-      // end the stream
-      stringifier.end();
-    }
-  );
+  // check if file exists
+  if (!fs.existsSync(filePath)) {
+    throw new AppError("Process not found", 404);
+  }
+
+  // read the file contents
+
+  const values = Object.values(data);
+
+  // wrap the output in quotes
+  const output = `"${values.join('"|"')}"`;
+
+  // pick the row of the file where the commandStep matches the commandStep in the request
+  const file = fs.readFileSync(filePath, "utf-8");
+  const rows = file.split("\n");
+  const rowToUpdate = rows.find((row) => row.includes(data.commandStep));
+
+  // replace the row with the new data
+  const updatedFile = file.replace(rowToUpdate, output);
+
+  // write the updated file to the file system
+  fs.writeFileSync(filePath, updatedFile);
 
   res.status(200).json({
     status: "success"

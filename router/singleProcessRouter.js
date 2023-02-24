@@ -12,4 +12,9 @@ router.delete(
   singleProcessController.deleteStepFromProcess
 );
 
+router.patch(
+  "/:processTitle/step/:commandStep",
+  singleProcessController.updateStepInProcess
+);
+
 module.exports = router;
