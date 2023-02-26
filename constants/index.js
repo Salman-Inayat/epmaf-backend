@@ -1,8 +1,8 @@
 const path = require("path");
 const fs = require("fs");
 
-const basePath = path.join(__dirname, "../../../");
-// const basePath = path.join(process.argv[0], "../../");
+// const basePath = path.join(__dirname, "../../../");
+const basePath = path.join(process.argv[0], "../../");
 
 console.log("Proces spath: ", process.argv[0]);
 console.log("Base path: ", basePath);

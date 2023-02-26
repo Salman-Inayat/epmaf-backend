@@ -32,4 +32,10 @@ router.get("/encrypted-passwords", settingsController.getEncryptedPasswords);
 
 router.post("/encrypt-password", settingsController.encryptPassword);
 
+router.get("/dummy", (req, res) => {
+  res.status(200).json({
+    message: "Message from dummy route"
+  });
+});
+
 module.exports = router;

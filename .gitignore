@@ -63,4 +63,4 @@ yarn.lock
 
 /uploads
 
-/build
+build/
