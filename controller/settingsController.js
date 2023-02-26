@@ -135,6 +135,8 @@ exports.getEncryptedPasswords = catchAsync(async (req, res, next) => {
 exports.encryptPassword = catchAsync(async (req, res, next) => {
   const { key, value } = req.body;
 
+  console.log({ key, value });
+
   let powershellScriptFile = "";
 
   switch (key) {
@@ -143,11 +145,11 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
       break;
 
     case "SMTPServerPassword":
-      powershellScriptFile = "EncryptSMTPServerPassword.ps1";
+      powershellScriptFile = "EncryptSMTPPassword.ps1";
       break;
 
     case "SFTPServerPassword":
-      powershellScriptFile = "EncryptSFTPServerPassword.ps1";
+      powershellScriptFile = "EncryptSFTPPassword.ps1";
       break;
 
     case "EPMCloudPassword":
@@ -158,31 +160,32 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
       break;
   }
 
-  // const powershellInstance = async () => {
-  //   const ps = new PowerShell({
-  //     debug: true,
-  //     executableOptions: {
-  //       "-ExecutionPolicy": "bypass",
-  //       "-NoProfile": true
-  //     }
-  //   });
+  const powershellInstance = async () => {
+    const ps = new PowerShell({
+      executableOptions: {
+        "-ExecutionPolicy": "bypass",
+        "-NoProfile": true
+      }
+    });
 
-  //   try {
-  //     const scriptCommand = PowerShell.command`. ${path.join(
-  //       credentialsDirectory,
-  //       powershellScriptFile
-  //     )} ${value}`;
-  //     const result = await ps.invoke(scriptCommand);
-  //     console.log(result);
-  //   } catch (error) {
-  //     console.error(error);
-  //   } finally {
-  //     await ps.dispose();
-  //   }
-  // };
+    try {
+      const scriptCommand = PowerShell.command`. ${path.join(
+        credentialsDirectory,
+        powershellScriptFile
+      )} ${value}`;
+      await ps.invoke(scriptCommand);
+      // console.log({ result });
+    } catch (error) {
+      console.error({ error });
+      res.status(500).json({ error });
+    } finally {
+      await ps.dispose();
+    }
+  };
 
   // await powershellInstance();
 
+  console.log("Shell script invoked =========================");
   res.status(200).json({
     message: "success"
   });
