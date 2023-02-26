@@ -133,9 +133,9 @@ exports.getEncryptedPasswords = catchAsync(async (req, res, next) => {
 });
 
 exports.encryptPassword = catchAsync(async (req, res, next) => {
-  const { key, value } = req.body;
+  const { key, value, fileName } = req.body;
 
-  console.log({ key, value });
+  console.log({ key, value, fileName });
 
   let powershellScriptFile = "";
 
@@ -173,8 +173,8 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
         credentialsDirectory,
         powershellScriptFile
       )} ${value}`;
-      await ps.invoke(scriptCommand);
-      // console.log({ result });
+      const result = await ps.invoke(scriptCommand);
+      console.log({ result });
     } catch (error) {
       console.error({ error });
       res.status(500).json({ error });
@@ -183,7 +183,7 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
     }
   };
 
-  // await powershellInstance();
+  await powershellInstance();
 
   console.log("Shell script invoked =========================");
   res.status(200).json({
