@@ -123,7 +123,7 @@ exports.getEncryptedPasswords = catchAsync(async (req, res, next) => {
         .replace(/\r?\n|\r/g, "");
 
       return {
-        [file.split(".")[0]]: content
+        ...(content !== "" && { [file.split(".")[0]]: content })
       };
     });
 
@@ -138,6 +138,14 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
   console.log({ key, value, fileName });
 
   let powershellScriptFile = "";
+
+  ["sftppassword", "sqlserverpassword", "smtppassword"].forEach((file) => {
+    const filePath = path.join(encryptedPasswordsDirectory, `${file}.txt`);
+
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, "", "utf16le");
+    }
+  });
 
   switch (key) {
     case "SQLServerPassword":
@@ -172,7 +180,7 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
       const scriptCommand = PowerShell.command`. ${path.join(
         credentialsDirectory,
         powershellScriptFile
-      )} ${value}`;
+      )} ${value} ${key === "EPMCloudPassword" ? fileName : ""}`;
       const result = await ps.invoke(scriptCommand);
       console.log({ result });
     } catch (error) {
@@ -183,10 +191,11 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
     }
   };
 
-  await powershellInstance();
-
-  console.log("Shell script invoked =========================");
   res.status(200).json({
     message: "success"
   });
+
+  await powershellInstance();
+
+  console.log("Shell script invoked =========================");
 });
