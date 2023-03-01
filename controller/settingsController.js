@@ -149,19 +149,19 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
 
   switch (key) {
     case "SQLServerPassword":
-      powershellScriptFile = "EncryptSQLServerPassword.ps1";
+      powershellScriptFile = "FE_EncryptSQLServerPassword.ps1";
       break;
 
     case "SMTPServerPassword":
-      powershellScriptFile = "EncryptSMTPPassword.ps1";
+      powershellScriptFile = "FE_EncryptSMTPPassword.ps1";
       break;
 
     case "SFTPServerPassword":
-      powershellScriptFile = "EncryptSFTPPassword.ps1";
+      powershellScriptFile = "FE_EncryptSFTPPassword.ps1";
       break;
 
     case "EPMCloudPassword":
-      powershellScriptFile = "EncryptEPMCloudPassword.ps1";
+      powershellScriptFile = "FE_EncryptEPMCloudPassword.ps1";
       break;
 
     default:
@@ -185,7 +185,7 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
       console.log({ result });
     } catch (error) {
       console.error({ error });
-      res.status(500).json({ error });
+      // res.status(500).json({ error });
     } finally {
       await ps.dispose();
     }
@@ -196,6 +196,4 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
   });
 
   await powershellInstance();
-
-  console.log("Shell script invoked =========================");
 });
