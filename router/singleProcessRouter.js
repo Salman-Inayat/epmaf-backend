@@ -17,4 +17,6 @@ router.patch(
   singleProcessController.updateStepInProcess
 );
 
+router.get("/:processTitle/run", singleProcessController.runProcess);
+
 module.exports = router;

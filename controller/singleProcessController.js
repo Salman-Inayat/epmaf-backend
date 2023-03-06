@@ -149,3 +149,12 @@ exports.updateStepInProcess = catchAsync(async (req, res) => {
     status: "success"
   });
 });
+
+exports.runProcess = catchAsync(async (req, res) => {
+  const processTitle = req.params.processTitle;
+
+  console.log({ processTitle });
+  res.status(200).json({
+    message: "success"
+  });
+});

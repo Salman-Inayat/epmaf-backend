@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+const { iconDirectory } = require("../constants");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./uploads");
+    cb(null, iconDirectory);
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "." + file.originalname.split(".").pop());

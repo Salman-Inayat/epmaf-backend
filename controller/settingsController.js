@@ -8,7 +8,8 @@ const { PowerShell } = require("node-powershell");
 const {
   environmentSettingsFile,
   encryptedPasswordsDirectory,
-  credentialsDirectory
+  credentialsDirectory,
+  iconDirectory
 } = require("../constants");
 
 exports.getSettingsFile = catchAsync(async (req, res, next) => {
@@ -40,7 +41,9 @@ exports.getSettingsFile = catchAsync(async (req, res, next) => {
 });
 
 exports.updateSettings = catchAsync(async (req, res, next) => {
-  const { data } = req.body;
+  let { data } = req.body;
+
+  data = JSON.parse(data);
 
   const settingsFile = fs.readFileSync(environmentSettingsFile, "utf8");
 
@@ -48,7 +51,39 @@ exports.updateSettings = catchAsync(async (req, res, next) => {
 
   Object.keys(data).forEach((key) => {
     const lineIndex = lines.findIndex((line) => line.startsWith(`$${key}`));
-    lines[lineIndex] = `$${key} = "${data[key]}"`;
+    // lines[lineIndex] = `$${key} = ${data[key]}`;
+
+    // get the content of LineIndex line
+    let lineContent = lines[lineIndex];
+    // get the value after =
+    // let value = lineContent.split("=")[1].trim();
+    // // get the first character of the value
+    // let firstChar = value.charAt(0);
+
+    // console.log({ value, firstChar, data: data[key] });
+    // // if the first character is ' or ", keep the ' or "
+    // if (firstChar === "'" || firstChar === '"') {
+    //   lines[lineIndex] = `$${key} = ${firstChar}${data[key]}${firstChar}`;
+    // }
+    // // if the first character is not ' or ", do not add any
+    // else {
+    //   lines[lineIndex] = `$${key} = ${data[key]}`;
+    // }
+
+    // if data.charAt(0) is ', then wrap it with '
+    console.log(data[key]);
+    if (
+      data[key].charAt(0) === "'" ||
+      data[key].charAt(0) === '"' ||
+      data[key].charAt(0) === "$"
+    ) {
+      lines[lineIndex] = `$${key} = ${data[key]}`;
+    }
+
+    // if data.charAt(0) is not ' or ", then wrap it with "
+    else {
+      lines[lineIndex] = `$${key} = "${data[key]}"`;
+    }
   });
 
   const newSettingsFile = lines.join("\n");
@@ -81,9 +116,11 @@ exports.addProperty = catchAsync(async (req, res, next) => {
 });
 
 exports.getApplicationIcon = catchAsync(async (req, res, next) => {
-  const files = fs.readdirSync(path.join(__dirname, "../uploads"));
+  const files = fs.readdirSync(iconDirectory);
 
   const iconPath = files[0];
+
+  console.log({ files });
 
   res.status(200).json({
     status: "success",
@@ -92,43 +129,60 @@ exports.getApplicationIcon = catchAsync(async (req, res, next) => {
 });
 
 exports.updateApplicationIcon = catchAsync(async (req, res, next) => {
-  const files = fs.readdirSync(path.join(__dirname, "../uploads"));
+  const files = fs.readdirSync(iconDirectory);
 
   files.forEach((file) => {
     if (file !== req.file.filename) {
-      fs.unlinkSync(path.join(__dirname, "../uploads", file));
+      fs.unlinkSync(path.join(iconDirectory, file));
     }
   });
 
   res.status(200).json({
     status: "success",
-    iconPath: `http://localhost:5001/${req.file.path}`
+    iconPath: `http://localhost:5001/uploads/${files[0]}`
   });
 });
 
 exports.getEncryptedPasswords = catchAsync(async (req, res, next) => {
   const files = fs.readdirSync(encryptedPasswordsDirectory);
+  let encryptedPasswords = [];
 
   if (!files.length) {
     return res.status(200).json({
-      passwords: []
+      encryptedPasswords
     });
   }
 
-  const passwords = files
-    .filter((file) => file.endsWith(".txt"))
-    .map((file) => {
-      const content = fs
-        .readFileSync(path.join(encryptedPasswordsDirectory, file), "utf16le")
-        .replace(/\r?\n|\r/g, "");
+  files.forEach((file) => {
+    const stats = fs.statSync(path.join(encryptedPasswordsDirectory, file));
+    if (file.endsWith(".epw")) {
+      encryptedPasswords.push({
+        title: "EPM",
+        encrypted: stats.size > 1 ? true : false,
+        fileName: file,
+        lastEncryptionTime: stats.mtime
+      });
+    } else {
+      const fileName = file.split(".")[0];
 
-      return {
-        ...(content !== "" && { [file.split(".")[0]]: content })
-      };
-    });
+      let key;
+
+      if (fileName.includes("sftp")) key = "SFTP Server";
+      if (fileName.includes("smtp")) key = "SMTP Server";
+      if (fileName.includes("sql")) key = "SQL Server";
+
+      encryptedPasswords.push({
+        title: key,
+        encrypted: stats.size > 1 ? true : false,
+        fileName: file,
+        lastEncryptionTime: stats.mtime
+      });
+    }
+  });
 
   res.status(200).json({
-    passwords
+    message: "success",
+    encryptedPasswords
   });
 });
 

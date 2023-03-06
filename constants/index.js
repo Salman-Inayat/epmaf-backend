@@ -1,8 +1,8 @@
 const path = require("path");
 const fs = require("fs");
 
-// const basePath = path.join(__dirname, "../../../");
-const basePath = path.join(process.argv[0], "../../");
+const basePath = path.join(__dirname, "../../../");
+// const basePath = path.join(process.argv[0], "../../");
 
 console.log("Process path: ", process.argv[0]);
 console.log("Base path: ", basePath);
@@ -41,6 +41,8 @@ const encryptedPasswordsDirectory = path.join(
   "Encrypted_Passwords"
 );
 
+const iconDirectory = path.join(basePath, "Web_Application", "Icon folder");
+
 module.exports = {
   basePath,
   environmentSettingsFile,
@@ -48,5 +50,6 @@ module.exports = {
   getDelimiterFromSettingsFile,
   uploadsDirectory,
   credentialsDirectory,
-  encryptedPasswordsDirectory
+  encryptedPasswordsDirectory,
+  iconDirectory
 };

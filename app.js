@@ -12,6 +12,8 @@ const app = express();
 const cors = require("cors");
 const path = require("path");
 
+const { iconDirectory, basePath } = require("./constants");
+
 app.use(
   cors({
     origin: "*",
@@ -32,7 +34,10 @@ app.use(helmet());
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/uploads", express.static("uploads"));
+app.use(
+  "/uploads",
+  express.static(path.join(basePath, "Web_Application", "Icon folder"))
+);
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
