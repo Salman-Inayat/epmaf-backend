@@ -53,35 +53,13 @@ exports.updateSettings = catchAsync(async (req, res, next) => {
     const lineIndex = lines.findIndex((line) => line.startsWith(`$${key}`));
     // lines[lineIndex] = `$${key} = ${data[key]}`;
 
-    // get the content of LineIndex line
-    let lineContent = lines[lineIndex];
-    // get the value after =
-    // let value = lineContent.split("=")[1].trim();
-    // // get the first character of the value
-    // let firstChar = value.charAt(0);
-
-    // console.log({ value, firstChar, data: data[key] });
-    // // if the first character is ' or ", keep the ' or "
-    // if (firstChar === "'" || firstChar === '"') {
-    //   lines[lineIndex] = `$${key} = ${firstChar}${data[key]}${firstChar}`;
-    // }
-    // // if the first character is not ' or ", do not add any
-    // else {
-    //   lines[lineIndex] = `$${key} = ${data[key]}`;
-    // }
-
-    // if data.charAt(0) is ', then wrap it with '
-    console.log(data[key]);
     if (
       data[key].charAt(0) === "'" ||
       data[key].charAt(0) === '"' ||
       data[key].charAt(0) === "$"
     ) {
-      lines[lineIndex] = `$${key} = ${data[key]}`;
-    }
-
-    // if data.charAt(0) is not ' or ", then wrap it with "
-    else {
+      lines[lineIndex] = `$${key}= ${data[key]}`;
+    } else {
       lines[lineIndex] = `$${key} = "${data[key]}"`;
     }
   });
