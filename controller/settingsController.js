@@ -221,6 +221,21 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
       });
     } catch (error) {
       console.error({ error });
+
+      const filesObj = {
+        SQLServerPassword: "sqlserverpassword.txt",
+        SMTPServerPassword: "smtppassword.txt",
+        SFTPServerPassword: "sftppassword.txt",
+        EPMCloudPassword: fileName
+      };
+
+      const files = fs.readdirSync(encryptedPasswordsDirectory);
+      files.forEach((file) => {
+        if (file.startsWith(filesObj[key])) {
+          fs.unlinkSync(path.join(encryptedPasswordsDirectory, file));
+        }
+      });
+
       res.status(500).json({
         message: "An error occurred"
       });
