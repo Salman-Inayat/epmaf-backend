@@ -171,13 +171,13 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
 
   let powershellScriptFile = "";
 
-  ["sftppassword", "sqlserverpassword", "smtppassword"].forEach((file) => {
-    const filePath = path.join(encryptedPasswordsDirectory, `${file}.txt`);
+  // ["sftppassword", "sqlserverpassword", "smtppassword"].forEach((file) => {
+  //   const filePath = path.join(encryptedPasswordsDirectory, `${file}.txt`);
 
-    if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, "", "utf16le");
-    }
-  });
+  //   if (!fs.existsSync(filePath)) {
+  //     fs.writeFileSync(filePath, "", "utf16le");
+  //   }
+  // });
 
   switch (key) {
     case "SQLServerPassword":
@@ -200,7 +200,40 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
       break;
   }
 
+  const ps = new PowerShell({
+    executableOptions: {
+      "-ExecutionPolicy": "bypass",
+      "-NoProfile": true
+    }
+  });
+
   const powershellInstance = async () => {
+    try {
+      const scriptCommand = PowerShell.command`. ${path.join(
+        credentialsDirectory,
+        powershellScriptFile
+      )} ${value} ${key === "EPMCloudPassword" ? fileName : ""}`;
+      const result = await ps.invoke(scriptCommand);
+      console.log({ result });
+
+      res.status(200).json({
+        message: "success"
+      });
+    } catch (error) {
+      console.error({ error });
+      res.status(500).json({
+        message: "An error occurred"
+      });
+    } finally {
+      await ps.dispose();
+    }
+  };
+
+  await powershellInstance();
+});
+
+exports.generateInitialEncryptionKeys = catchAsync(async (req, res) => {
+  const powershellInstance = async (powershellScriptFile, value) => {
     const ps = new PowerShell({
       executableOptions: {
         "-ExecutionPolicy": "bypass",
@@ -212,12 +245,11 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
       const scriptCommand = PowerShell.command`. ${path.join(
         credentialsDirectory,
         powershellScriptFile
-      )} ${value} ${key === "EPMCloudPassword" ? fileName : ""}`;
+      )} ${value}`;
       const result = await ps.invoke(scriptCommand);
       console.log({ result });
     } catch (error) {
       console.error({ error });
-      // res.status(500).json({ error });
     } finally {
       await ps.dispose();
     }
@@ -227,5 +259,7 @@ exports.encryptPassword = catchAsync(async (req, res, next) => {
     message: "success"
   });
 
-  await powershellInstance();
+  await powershellInstance("FE_EncryptSQLServerPassword.ps1", "password");
+  await powershellInstance("FE_EncryptSMTPPassword.ps1", "password");
+  await powershellInstance("FE_EncryptSFTPPassword.ps1", "password");
 });
