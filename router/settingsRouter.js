@@ -21,14 +21,6 @@ router.put("/update", settingsController.updateSettings);
 
 router.put("/add-property", settingsController.addProperty);
 
-router.get("/application-icon", settingsController.getApplicationIcon);
-
-router.post(
-  "/update-application-icon",
-  upload.single("file"),
-  settingsController.updateApplicationIcon
-);
-
 router.get("/encrypted-passwords", settingsController.getEncryptedPasswords);
 
 router.post("/encrypt-password", settingsController.encryptPassword);

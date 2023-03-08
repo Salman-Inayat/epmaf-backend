@@ -125,34 +125,6 @@ exports.addProperty = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getApplicationIcon = catchAsync(async (req, res, next) => {
-  const files = fs.readdirSync(iconDirectory);
-
-  const iconPath = files[0];
-
-  console.log({ files });
-
-  res.status(200).json({
-    status: "success",
-    iconPath: `http://localhost:5001/uploads/${iconPath}`
-  });
-});
-
-exports.updateApplicationIcon = catchAsync(async (req, res, next) => {
-  const files = fs.readdirSync(iconDirectory);
-
-  files.forEach((file) => {
-    if (file !== req.file.filename) {
-      fs.unlinkSync(path.join(iconDirectory, file));
-    }
-  });
-
-  res.status(200).json({
-    status: "success",
-    iconPath: `http://localhost:5001/uploads/${files[0]}`
-  });
-});
-
 exports.getEncryptedPasswords = catchAsync(async (req, res, next) => {
   const files = fs.readdirSync(encryptedPasswordsDirectory);
   let encryptedPasswords = [];
