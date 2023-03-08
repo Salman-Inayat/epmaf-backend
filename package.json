@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon ./backend/server.js",
+    "dev": "nodemon server.js",
     "build": "ncc build -o build/lib ./server.js && pkg --target node16-win-x64 --assets ./uploads/**/* ./build/lib/index.js"
   },
   "dependencies": {

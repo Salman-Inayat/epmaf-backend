@@ -23,11 +23,9 @@ exports.getSettingsFile = catchAsync(async (req, res, next) => {
       currentSection = line.substring(2, line.lastIndexOf("##")).trim();
       variables[currentSection] = {};
     } else if (line.startsWith("$")) {
-      const [name, value] = line.split("=", 2).map((str) =>
-        str
-          .split("#")[0]
-          .trim()
-          .replace(/^"(.*)"$/, "$1")
+      const [name, value] = line.split("=", 2).map(
+        (str) => str.split("#")[0].trim()
+        // .replace(/^"(.*)"$/, "$1")
       );
 
       variables[currentSection][name.substring(1)] = value;
@@ -41,32 +39,66 @@ exports.getSettingsFile = catchAsync(async (req, res, next) => {
 });
 
 exports.updateSettings = catchAsync(async (req, res, next) => {
-  let { data } = req.body;
+  let { category, data } = req.body;
 
   data = JSON.parse(data);
+
+  console.log({ category, data });
 
   const settingsFile = fs.readFileSync(environmentSettingsFile, "utf8");
 
   const lines = settingsFile.split("\n");
 
-  Object.keys(data).forEach((key) => {
-    const lineIndex = lines.findIndex((line) => line.startsWith(`$${key}`));
-    // lines[lineIndex] = `$${key} = ${data[key]}`;
+  const sectionStartIndex = lines.findIndex((line) =>
+    line.startsWith(`## ${category} ##`)
+  );
 
-    if (
-      data[key].charAt(0) === "'" ||
-      data[key].charAt(0) === '"' ||
-      data[key].charAt(0) === "$"
-    ) {
-      lines[lineIndex] = `$${key}= ${data[key]}`;
-    } else {
-      lines[lineIndex] = `$${key} = "${data[key]}"`;
-    }
+  const sectionEndIndex = lines.findIndex(
+    (line, index) => line.startsWith("## ") && index > sectionStartIndex
+  );
+
+  const sectionLines = lines.slice(sectionStartIndex, sectionEndIndex);
+
+  console.log({ sectionStartIndex, sectionEndIndex, sectionLines });
+  Object.keys(data).forEach((key) => {
+    const lineIndex = sectionLines.findIndex((line) =>
+      line.startsWith(`$${key}`)
+    );
+    sectionLines[lineIndex] = `$${key} = ${data[key]}`;
   });
+
+  lines.splice(
+    sectionStartIndex,
+    sectionEndIndex - sectionStartIndex,
+    ...sectionLines
+  );
 
   const newSettingsFile = lines.join("\n");
 
   fs.writeFileSync(environmentSettingsFile, newSettingsFile);
+
+  // const settingsFile = fs.readFileSync(environmentSettingsFile, "utf8");
+
+  // const lines = settingsFile.split("\n");
+
+  // Object.keys(data).forEach((key) => {
+  //   const lineIndex = lines.findIndex((line) => line.startsWith(`$${key}`));
+  //   lines[lineIndex] = `$${key} = ${data[key]}`;
+
+  //   // if (
+  //   //   data[key].charAt(0) === "'" ||
+  //   //   data[key].charAt(0) === '"' ||
+  //   //   data[key].charAt(0) === "$"
+  //   // ) {
+  //   //   lines[lineIndex] = `$${key}= ${data[key]}`;
+  //   // } else {
+  //   //   lines[lineIndex] = `$${key} = "${data[key]}"`;
+  //   // }
+  // });
+
+  // const newSettingsFile = lines.join("\n");
+
+  // fs.writeFileSync(environmentSettingsFile, newSettingsFile);
 
   res.status(200).json({
     status: "success"
@@ -135,7 +167,7 @@ exports.getEncryptedPasswords = catchAsync(async (req, res, next) => {
     const stats = fs.statSync(path.join(encryptedPasswordsDirectory, file));
     if (file.endsWith(".epw")) {
       encryptedPasswords.push({
-        title: "EPM",
+        title: "EPM Cloud",
         encrypted: stats.size > 1 ? true : false,
         fileName: file,
         lastEncryptionTime: stats.mtime
