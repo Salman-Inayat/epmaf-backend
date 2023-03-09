@@ -1,8 +1,8 @@
 const path = require("path");
 const fs = require("fs");
 
-const basePath = path.join(__dirname, "../../../");
-// const basePath = path.join(process.argv[0], "../../");
+// const basePath = path.join(__dirname, "../../../");
+const basePath = path.join(process.argv[0], "../../");
 
 console.log("Process path: ", process.argv[0]);
 console.log("Base path: ", basePath);
@@ -41,11 +41,11 @@ const encryptedPasswordsDirectory = path.join(
   "Encrypted_Passwords"
 );
 
-const settingsDirectory = path.join(basePath, "Web-Application", "Settings");
+const settingsDirectory = path.join(basePath, "Web_Application", "Settings");
 
 const settingsFile = path.join(
   basePath,
-  "Web-Application",
+  "Web_Application",
   "Settings",
   "Settings.json"
 );
