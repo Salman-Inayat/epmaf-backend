@@ -41,7 +41,14 @@ const encryptedPasswordsDirectory = path.join(
   "Encrypted_Passwords"
 );
 
-const iconDirectory = path.join(basePath, "Web_Application", "Icon folder");
+const settingsDirectory = path.join(basePath, "Web-Application", "Settings");
+
+const settingsFile = path.join(
+  basePath,
+  "Web-Application",
+  "Settings",
+  "Settings.json"
+);
 
 module.exports = {
   basePath,
@@ -51,5 +58,6 @@ module.exports = {
   uploadsDirectory,
   credentialsDirectory,
   encryptedPasswordsDirectory,
-  iconDirectory
+  settingsDirectory,
+  settingsFile
 };

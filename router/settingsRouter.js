@@ -30,6 +30,13 @@ router.post(
   settingsController.generateInitialEncryptionKeys
 );
 
+router.post(
+  "/update-app-name",
+  settingsController.updateApplicationNameSettings
+);
+
+router.get("/get-app-name", settingsController.getApplicationNameSettings);
+
 router.get("/dummy", (req, res) => {
   res.status(200).json({
     message: "Message from dummy route"

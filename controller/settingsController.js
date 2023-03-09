@@ -9,7 +9,9 @@ const {
   environmentSettingsFile,
   encryptedPasswordsDirectory,
   credentialsDirectory,
-  iconDirectory
+  iconDirectory,
+  settingsDirectory,
+  settingsFile
 } = require("../constants");
 
 exports.getSettingsFile = catchAsync(async (req, res, next) => {
@@ -281,4 +283,62 @@ exports.generateInitialEncryptionKeys = catchAsync(async (req, res) => {
   await powershellInstance("FE_EncryptSQLServerPassword.ps1", "password");
   await powershellInstance("FE_EncryptSMTPPassword.ps1", "password");
   await powershellInstance("FE_EncryptSFTPPassword.ps1", "password");
+});
+
+exports.updateApplicationNameSettings = catchAsync(async (req, res) => {
+  const { applicationName, applicationNameFontColor, applicationNameFontSize } =
+    req.body.appSettings;
+
+  const appNameSettings = {
+    applicationName: applicationName,
+    fontColor: applicationNameFontColor,
+    fontSize: applicationNameFontSize
+  };
+
+  // check if the settings.json file exists
+  if (!fs.existsSync(settingsFile)) {
+    fs.mkdirSync(settingsDirectory, { recursive: true });
+
+    // if not, create it
+    fs.writeFileSync(settingsFile, JSON.stringify(appNameSettings), "utf8");
+  }
+
+  // if it does exist, read the file
+  const settings = fs.readFileSync(settingsFile, "utf8");
+
+  // parse the json file
+  const parsedSettings = JSON.parse(settings);
+
+  // update the settings
+  parsedSettings.applicationName = applicationName;
+  parsedSettings.fontColor = applicationNameFontColor;
+  parsedSettings.fontSize = applicationNameFontSize;
+
+  // write the updated settings to the file
+  fs.writeFileSync(settingsFile, JSON.stringify(parsedSettings), "utf8");
+
+  res.status(200).json({
+    status: "success"
+  });
+});
+
+exports.getApplicationNameSettings = catchAsync(async (req, res) => {
+  // check if the settings.json file exists
+  if (!fs.existsSync(settingsFile)) {
+    fs.mkdirSync(settingsDirectory, { recursive: true });
+
+    // if not, create it
+    fs.writeFileSync(settingsFile, JSON.stringify({}), "utf8");
+  }
+
+  // if it does exist, read the file
+  const settings = fs.readFileSync(settingsFile, "utf8");
+
+  // parse the json file
+  const parsedSettings = JSON.parse(settings);
+
+  res.status(200).json({
+    status: "success",
+    settings: parsedSettings
+  });
 });
